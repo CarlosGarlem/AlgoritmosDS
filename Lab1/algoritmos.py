@@ -164,3 +164,87 @@ def center_finite_derivative_2(str_equ, x, h):
     result = eval(strOut)
     return result
 
+
+def center_finite_derivative_v2(str_equ, p, h):
+    x = float(p[0])
+    y = float(p[1])
+    h = float(h)
+    
+    str_parciales = []
+    for var in ['x', 'y']:
+        equ = str_equ.replace('y', '*(y)') if var == 'x' else str_equ.replace('x', '*(x)')
+        f1 = f2 = '(' +  equ + ')'
+ 
+        f1 = f1.replace(var, '*(' + var + ' + h)')
+        f1 = f1.replace('^', '**')
+    
+        f2 = f2.replace(var, '*(' + var + ' - h)')
+        f2 = f2.replace('^', '**')
+      
+        strOut = '(' + f1 + ' - ' + f2 + ')' + ' / (2 * h)'
+        str_parciales.append(strOut)
+
+        
+    #[print(parcial) for parcial in str_parciales]
+    result = [eval(parcial, {}, {'x': x, 'y': y, 'h': h}) for parcial in str_parciales]
+    return result
+
+
+
+
+def progressive_finite_derivative_v2(str_equ, p, h):
+    x = float(p[0])
+    y = float(p[1])
+    h = float(h)
+        
+    str_parciales = []
+    for var in ['x', 'y']:
+        equ = str_equ.replace('y', '*(y)') if var == 'x' else str_equ.replace('x', '*(x)')
+        f1 = f2 = f3 = '(' +  equ + ')'
+
+        f1 = f1.replace(var, '*(' + var + ')')
+        f1 = f1.replace('^', '**')
+
+        f2 = f2.replace(var, '*(' + var + ' + h)')
+        f2 = f2.replace('^', '**')
+
+        f3 = f3.replace(var, '*(' + var + ' + 2 * h)')
+        f3 = f3.replace('^', '**')
+        
+        strOut = '(-3 * ' + f1 + ' + 4 * ' + f2 + ' - ' + f3 + ')' + ' / (2 * h)'
+        str_parciales.append(strOut)
+        
+        
+    #[print(parcial) for parcial in str_parciales]
+    result = [eval(parcial, {}, {'x': x, 'y': y, 'h': h}) for parcial in str_parciales]
+    return result
+
+
+def center_finite_derivative_2_v2(str_equ, p, h):
+    x = float(p[0])
+    y = float(p[1])
+    h = float(h)
+     
+    str_parciales = []
+    for var in ['x', 'y']:
+        equ = str_equ.replace('y', '*(y)') if var == 'x' else str_equ.replace('x', '*(x)')
+        f1 = f2 = f3 = f4 = '(' +  equ + ')'
+    
+        f1 = f1.replace(var, '*(' + var +' + h)')
+        f1 = f1.replace('^', '**')
+
+        f2 = f2.replace(var, '*(' + var + ' - h)')
+        f2 = f2.replace('^', '**')
+
+        f3 = f3.replace(var, '*(' + var + ' + 2 * h)')
+        f3 = f3.replace('^', '**')
+
+        f4 = f4.replace(var, '*(' + var +' - 2 * h)')
+        f4 = f4.replace('^', '**')
+        strOut = '(' + f4 + ' - 8 * ' + f2 + ' + 8 * ' + f1 + ' - ' + f3 + ')' + ' / (12 * h)'
+        str_parciales.append(strOut)
+      
+    
+    #[print(parcial) for parcial in str_parciales]
+    result = [eval(parcial, {}, {'x': x, 'y': y, 'h': h}) for parcial in str_parciales]
+    return result

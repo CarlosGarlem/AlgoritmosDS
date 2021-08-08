@@ -165,7 +165,13 @@ def center_finite_derivative_2(str_equ, x, h):
     return result
 
 
-def center_finite_derivative_v2(str_equ, p, h):
+
+# ### Lab2 Functions
+
+# In[12]:
+
+
+def center_finite_derivative_r2(str_equ, p, h):
     x = float(p[0])
     y = float(p[1])
     h = float(h)
@@ -190,18 +196,19 @@ def center_finite_derivative_v2(str_equ, p, h):
     return result
 
 
+# In[13]:
 
 
-def progressive_finite_derivative_v2(str_equ, p, h):
+def progressive_finite_derivative_r2(str_equ, p, h):
     x = float(p[0])
     y = float(p[1])
     h = float(h)
-        
+     
     str_parciales = []
     for var in ['x', 'y']:
         equ = str_equ.replace('y', '*(y)') if var == 'x' else str_equ.replace('x', '*(x)')
         f1 = f2 = f3 = '(' +  equ + ')'
-
+   
         f1 = f1.replace(var, '*(' + var + ')')
         f1 = f1.replace('^', '**')
 
@@ -220,7 +227,10 @@ def progressive_finite_derivative_v2(str_equ, p, h):
     return result
 
 
-def center_finite_derivative_2_v2(str_equ, p, h):
+# In[14]:
+
+
+def center_finite_derivative_2_r2(str_equ, p, h):
     x = float(p[0])
     y = float(p[1])
     h = float(h)

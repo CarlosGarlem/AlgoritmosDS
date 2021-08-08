@@ -5,13 +5,14 @@ library(shinydashboard)
 # Define UI for application that draws a histogram
 dashboardPage(
     
-    dashboardHeader(title = 'Algoritmos en la Ciencia de Datos'),
+    dashboardHeader(title = 'Algoritmos DS'),
     
     dashboardSidebar(
         sidebarMenu(
             menuItem('Ceros', tabName = 'Ceros'),
             menuItem('Derivacion', tabName = 'Derivacion'),
-            menuItem('Diferenciacion Numerica', tabName = 'diffNum')
+            menuItem('Diferenciacion Numerica en R', tabName = 'diffNum'),
+            menuItem('Diferenciacion Numerica en R2', tabName = 'diffNumR2')
         )
     ),
     
@@ -51,13 +52,37 @@ dashboardPage(
                             textInput('function_diffnum', 'Ingrese la Ecuacion'),
                             #strong('Ecuacion'),
                             #p('3x^4 - 2x^3 -4x^2 + 5x + 2'),
-                            numericInput('x_diffnum', 'x', value = 1),
+                            numericInput('x_diffnum', 'X0', value = 1),
                             numericInput('h_diffnum', 'h', value = 1),
                             actionButton('eval_diffnum', 'Evaluar Derivada')
                         ),
                         box(width = 4, solidHeader = TRUE,
                             #DT::dataTableOutput('diffnum_table')
                             tableOutput('diffnum_table')
+                        )
+                    )
+            ),
+            
+            
+            tabItem('diffNumR2',
+                    h1('Diferenciacicion Numerica en R2'),
+                    
+                    fluidRow(
+                        box(width = 4, solidHeader = TRUE, status = "primary",
+                            radioButtons('algorithms_diffnum_r2',
+                                         'Seleccione un algoritmo',
+                                         choices = c('Diferencia Finita Centrada' = 'diffCenter',
+                                                     'Diferencia Finita Progresiva' = 'diffProgressive',
+                                                     'Diferencia Finita Centrada2' = 'diffCenter2'),
+                                         selected = 'diffCenter'),
+                            textInput('function_diffnum_r2', 'Ingrese la Ecuacion'),
+                            textInput('x_diffnum_r2', 'P(X0,Y0)'),
+                            numericInput('h_diffnum_r2', 'h', value = 1),
+                            actionButton('eval_diffnum_r2', 'Evaluar Derivada')
+                        ),
+                        box(width = 4, solidHeader = TRUE,
+                            #DT::dataTableOutput('diffnum_table')
+                            tableOutput('diffnum_table_r2')
                         )
                     )
             )

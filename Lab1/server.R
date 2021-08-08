@@ -4,9 +4,6 @@ use_python('D:/anaconda3/envs/pydsEnv')
 
 source_python("algoritmos.py")
 
-#tableOut, soluc = newtonSolverX(-5, "2x^5 - 3", 0.0001)
-#3x^4 - 2x^3 -4x^2 + 5x + 2
-#3x^4 - 2x^3y - 4x^2y^2 + 5xy^3 + 2y^4
 
 shinyServer(function(input, output) {
     
@@ -35,6 +32,10 @@ shinyServer(function(input, output) {
         input$algorithms_diffnum
     })
     
+    algorithm_option_r2 <- reactive({
+        input$algorithms_diffnum_r2
+    })
+    
     
     calculateDiffNum <- eventReactive(input$eval_diffnum, {
         equation <- input$function_diffnum[1]
@@ -53,23 +54,26 @@ shinyServer(function(input, output) {
         d_value <- eval(parse(text = d))
         error <- abs(d_value - derivative)
         
-        df <- data.frame('Valor Real' = d_value, 'Aproximacion' = derivative, 'Error' = error)
+        df <- data.frame('Variable' = c('x'), 'Valor Real' = d_value, 'Aproximacion' = derivative, 'Error' = error)
         df
         
     })
     
     
     
-    calculateDiffNum_v2 <- eventReactive(input$eval_diffnum, {
-        equation <- input$function_diffnum[1]
-        #x <- input$x_diffnum[1]
-        x <- c(2, 4)
-        h <- input$h_diffnum[1]
+    calculateDiffNum_r2 <- eventReactive(input$eval_diffnum_r2, {
+        equation <- input$function_diffnum_r2[1]
+        x <- input$x_diffnum_r2[1]
+        x <- gsub('[() ]', '', x)
+        x <- strsplit(x, ',')
+        x <- unlist(x, recursive = TRUE)
+        h <- input$h_diffnum_r2[1]
         
-        d_function <- switch(algorithm_option(),
-                             diffCenter = center_finite_derivative_v2,
-                             diffProgressive = progressive_finite_derivative_v2,
-                             diffCenter2 = center_finite_derivative_2_v2)
+        
+        d_function <- switch(algorithm_option_r2(),
+                             diffCenter = center_finite_derivative_r2,
+                             diffProgressive = progressive_finite_derivative_r2,
+                             diffCenter2 = center_finite_derivative_2_r2)
         derivative <- d_function(equation, x, h)
         
         
@@ -109,8 +113,11 @@ shinyServer(function(input, output) {
     #    calculateDiffNum()
     #})
     output$diffnum_table <- renderTable({
-        #calculateDiffNum()
-        calculateDiffNum_v2()
+        calculateDiffNum()
+    })
+    
+    output$diffnum_table_r2 <- renderTable({
+        calculateDiffNum_r2()
     })
     
 })

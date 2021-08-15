@@ -4,99 +4,52 @@
 # In[1]:
 
 
-import pandas
+import pandas as pd
 import re
 
 
 # ### First functions
 
-# In[2]:
+# In[56]:
 
 
-#Evaluación REGEX
-def evaluate_Fx(str_equ, valX):
-    x = valX
-    #strOut = str_equ
+def evaluate_Fx(str_equ, x):
+    x = float(x)
     strOut = str_equ.replace('x', '*(x)')
     strOut = strOut.replace('^', '**')
-    out = eval(strOut)
-    print(strOut)
-    return out
+    
+    result = eval(strOut)
+    return result
 
 
 # In[3]:
 
 
-#Deferencias finitas para derivadas
-def evaluate_derivate_fx(str_equ, x, h):
+def finite_derivative(str_equ, x, h):
     x = float(x)
     h = float(h)
-    strOut = str_equ.replace("x", '*(x + h)')
-    strOut = strOut.replace("^", "**")
-    strOut = "-4*(" + strOut + ")"
-    out = eval(strOut)
-  
-    strOut = str_equ.replace("x", '*(x + 2*h)')
-    strOut = strOut.replace("^", "**")
-    out = out + eval(strOut)
-  
-    strOut = str_equ.replace("x", '*(x)')
-    strOut = strOut.replace("^", "**")
-    strOut = "3*(" + strOut + ")"
-    out = out + eval(strOut)
-  
-    out = -out/(2*h)
-    print(out)
-    return out
+    f1 = f2 = f3 = '(' +  str_equ + ')'
+    
+    f1 = f1.replace('x', '*(x + 2*h)')
+    f1 = f1.replace('^', '**')
+    
+    f2 = f2.replace('x', '*(x + h)')
+    f2 = f2.replace('^', '**')
+    
+    f3 = f3.replace('x', '*(x)')
+    f3 = f3.replace('^', '**')
+      
+    strOut = '(' + f1 + ' - 4 * ' + f2 + ' + 3 *' + f3 + ')' + ' / (2 * h)'
+    result = eval(strOut)
+    return result
 
+
+# 
+# ## Lab1 Functions
+
+# #### R1 functions
 
 # In[4]:
-
-
-#Resolvedor de Newton
-def newtonSolverX(x0, f_x, eps):
-    x0 = float(x0)
-    eps = float(eps)
-    xn = x0
-    error = 1
-    arrayIters = []
-    arrayF_x = []
-    arrayf_x = []
-    arrayXn = []
-    arrayErr = []
-  
-    i = 0
-    h = 0.000001
-    while(error > eps):
-        print("...")
-        x_n1 = xn - (evaluate_Fx(f_x, xn)/evaluate_derivate_fx(f_x, xn, h))
-        error = abs(x_n1 - xn)
-        i += 1
-        xn = x_n1
-        arrayIters.append(i)
-        arrayXn.append(xn)
-        arrayErr.append(error)
-        solution = [i, xn, error]
-
-    print("Finalizo...")
-    
-    TableOut = pandas.DataFrame({'Iter':arrayIters, 'Xn':arrayXn, 'Error': arrayErr})
-    return TableOut
-
-
-# In[5]:
-
-
-def add(a, b):
-    a = int(a)
-    b = int(b)
-    resultado = a + b
-    return "El resultado es: " + str(resultado)
-
-
-# ### Lab1 Functions
-
-# In[6]:
 
 
 def center_finite_derivative(str_equ, x, h):
@@ -116,7 +69,7 @@ def center_finite_derivative(str_equ, x, h):
     return result
 
 
-# In[7]:
+# In[5]:
 
 
 def progressive_finite_derivative(str_equ, x, h):
@@ -139,7 +92,7 @@ def progressive_finite_derivative(str_equ, x, h):
     return result
 
 
-# In[8]:
+# In[6]:
 
 
 def center_finite_derivative_2(str_equ, x, h):
@@ -165,10 +118,9 @@ def center_finite_derivative_2(str_equ, x, h):
     return result
 
 
+# #### R2 Functions
 
-# ### Lab2 Functions
-
-# In[12]:
+# In[10]:
 
 
 def center_finite_derivative_r2(str_equ, p, h):
@@ -196,7 +148,7 @@ def center_finite_derivative_r2(str_equ, p, h):
     return result
 
 
-# In[13]:
+# In[11]:
 
 
 def progressive_finite_derivative_r2(str_equ, p, h):
@@ -227,7 +179,7 @@ def progressive_finite_derivative_r2(str_equ, p, h):
     return result
 
 
-# In[14]:
+# In[12]:
 
 
 def center_finite_derivative_2_r2(str_equ, p, h):
@@ -258,3 +210,65 @@ def center_finite_derivative_2_r2(str_equ, p, h):
     #[print(parcial) for parcial in str_parciales]
     result = [eval(parcial, {}, {'x': x, 'y': y, 'h': h}) for parcial in str_parciales]
     return result
+
+
+
+# ## Lab2 Functions
+
+# In[57]:
+
+
+def metodo_biseccion(str_equ, interval, k_max, epsilon):
+    k = 0
+    a = float(interval[0])
+    b = float(interval[1])
+    error = float('inf')
+    data = {'Iter': [], 'Xn': [], 'Error': []}
+    
+    x_k = (a + b) / 2    
+    while k < k_max and error > epsilon:
+        Fa = evaluate_Fx(str_equ, a)
+        Fx_k = evaluate_Fx(str_equ, x_k)
+        if (Fa * Fx_k) < 0:
+            b = x_k
+        else:
+            a = x_k
+        
+        k += 1
+        x_k = (a + b) / 2
+        error = abs(Fx_k)
+        
+        data['Iter'].append(k)
+        data['Xn'].append(x_k)
+        data['Error'].append(error)
+        
+    results = pd.DataFrame(data)
+    return results
+
+
+# In[58]:
+
+
+def metodo_newton(str_equ, x_0, k_max, epsilon):
+    k = 0
+    x_k = x_0
+    error = float('inf')
+    data = {'Iter': [], 'Xn': [], 'Error': []}
+    
+    while k < k_max and error > epsilon:
+        Fx_k = evaluate_Fx(str_equ, x_k)
+        dev1_Fx_k = center_finite_derivative_2(str_equ, x_k, 0.00001)
+        
+        x_k1 = x_k - (Fx_k / dev1_Fx_k)
+        x_k = x_k1
+        k += 1
+        error = abs(Fx_k)
+        
+        data['Iter'].append(k)
+        data['Xn'].append(x_k)
+        data['Error'].append(error)
+        
+    results = pd.DataFrame(data)
+    return results
+
+

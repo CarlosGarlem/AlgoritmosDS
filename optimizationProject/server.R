@@ -7,26 +7,7 @@ source_python("algoritmos.py")
 
 shinyServer(function(input, output) {
     
-    #Evento y evaluacion de metodo de newton para ceros
-    newtonCalculate<-eventReactive(input$nwtSolver, {
-        inputEcStr<-input$ecuacion[1]
-        print(inputEcStr)
-        initVal<-input$initVal[1]
-        error<-input$Error[1]
-        #outs<-add(initVal, error)
-        outs<-newtonSolverX(initVal, inputEcStr, error)
-        outs
-    })
-    
-    #Evento y evaluación de diferencias finitas
-    diferFinitCalculate<-eventReactive(input$diferFinEval, {
-        inputEcStr<-input$difFinEcu[1]
-        valX<-input$valorX[1]
-        h<-input$valorH[1]
-        outs<-evaluate_derivate_fx(inputEcStr, valX, h)
-        as.character(outs)
-    })
-    
+    #REACTIVE BUTTONS -----------------------------------
     
     algorithm_option <- reactive({
         input$algorithms_diffnum
@@ -36,6 +17,7 @@ shinyServer(function(input, output) {
         input$algorithms_diffnum_r2
     })
     
+    #REACTIVE FUNCTIONS -----------------------------------
     
     calculateDiffNum <- eventReactive(input$eval_diffnum, {
         equation <- input$function_diffnum[1]
@@ -47,18 +29,11 @@ shinyServer(function(input, output) {
                              diffProgressive = progressive_finite_derivative,
                              diffCenter2 = center_finite_derivative_2)
         derivative <- d_function(equation, x, h)
-
         
-        d <- '12x^3 - 6x^2 - 8x +5'
-        d <- gsub('x', paste('*(', x, ')', sep = ''), d)
-        d_value <- eval(parse(text = d))
-        error <- abs(d_value - derivative)
-        
-        df <- data.frame('Variable' = c('x'), 'Valor Real' = d_value, 'Aproximacion' = derivative, 'Error' = error)
+        df <- data.frame('Variable' = c('x'), 'Ecuacion' = equation, 'h' = h, 'Aproximacion' = derivative)
         df
         
     })
-    
     
     
     calculateDiffNum_r2 <- eventReactive(input$eval_diffnum_r2, {
@@ -76,42 +51,45 @@ shinyServer(function(input, output) {
                              diffCenter2 = center_finite_derivative_2_r2)
         derivative <- d_function(equation, x, h)
         
-        
+        df <- data.frame('Variable' = c('x', 'y'), 'Ecuacion' = equation, 'h' = h, 'Aproximacion' = derivative)
+        df
+    })
 
-        d1 <- '12x^3 - 6x^2y - 8xy^2 + 5y^3'
-        d1 <- gsub('x', paste('*(', x[1], ')', sep = ''), d1)
-        d1 <- gsub('y', paste('*(', x[2], ')', sep = ''), d1)
+    
+    calculateNewton <- eventReactive(input$eval_newton, {
+        equation <- input$function_newton[1]
+        x <- input$newton_x0[1]
+        e <- input$newton_e[1]
+        k <- input$newton_iters[1]
         
-        d2 <- '-2x^3 - 8x^2y + 15xy^2 + 8y^3'
-        d2 <- gsub('x', paste('*(', x[1], ')', sep = ''), d2)
-        d2 <- gsub('y', paste('*(', x[2], ')', sep = ''), d2)
-        
-        
-        d_value <- c(eval(parse(text = d1))
-                     ,eval(parse(text = d2)))
-        
-        error <- abs(d_value - derivative)
-        df <- data.frame('Variable' = c('x', 'y'), 'Valor Real' = d_value, 'Aproximacion' = derivative, 'Error' = error)
+        result <- metodo_newton(equation, x, k, e)
+        df <- as.data.frame(result)
         df
         
     })
-
     
-    #REnder metodo de Newton
-    output$salidaTabla<-renderTable({
-        newtonCalculate()
+    
+    calculateBiseccion <- eventReactive(input$eval_biseccion, {
+        equation <- input$function_biseccion[1]
+        e <- input$biseccion_e[1]
+        k <- input$biseccion_iters[1]
+        
+        dominio <- input$biseccion_interval[1]
+        dominio <- gsub('(\\[|\\]| )', '', dominio)
+        dominio <- strsplit(dominio, ',')
+        dominio <- unlist(dominio, recursive = TRUE)
+        
+        result <- metodo_biseccion(equation, dominio, k, e)
+        df <- as.data.frame(result)
+        df
+        
     })
     
-    
-    #Render Diferncias Finitas
-    output$difFinitOut<-renderText({
-        diferFinitCalculate()
-    })
-    
-    
+    #RENDER OUTPUTS  --------------------------------------------------
     #output$diffnum_table <- DT::renderDataTable({
     #    calculateDiffNum()
     #})
+    #Derivadas
     output$diffnum_table <- renderTable({
         calculateDiffNum()
     })
@@ -119,5 +97,16 @@ shinyServer(function(input, output) {
     output$diffnum_table_r2 <- renderTable({
         calculateDiffNum_r2()
     })
+    
+    #Ceros
+    output$newton_table<- DT::renderDataTable({
+        calculateNewton()
+    })
+    
+    
+    output$biseccion_table<- DT::renderDataTable({
+        calculateBiseccion()
+    })
+    
     
 })

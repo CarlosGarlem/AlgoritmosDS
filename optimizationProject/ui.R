@@ -9,34 +9,15 @@ dashboardPage(
     
     dashboardSidebar(
         sidebarMenu(
-            menuItem('Ceros', tabName = 'Ceros'),
-            menuItem('Derivacion', tabName = 'Derivacion'),
             menuItem('Diferenciacion Numerica en R', tabName = 'diffNum'),
-            menuItem('Diferenciacion Numerica en R2', tabName = 'diffNumR2')
+            menuItem('Diferenciacion Numerica en R2', tabName = 'diffNumR2'),
+            menuItem('Metodo Newton', tabName = 'ceros_newton'),
+            menuItem('Metodo Biseccion', tabName = 'ceros_biseccion')
         )
     ),
     
     dashboardBody(
         tabItems(
-            tabItem('Ceros',
-                    h1('Metodo de Newton'),
-                    box(textInput('ecuacion', 'Ingrese la Ecuacion'),
-                        textInput('initVal', 'X0'),
-                        textInput('Error', 'Error'),
-                        actionButton('nwtSolver', 'Newton Solver')
-                    ),
-                    tableOutput('salidaTabla')
-            ),
-            
-            tabItem('Derivacion',
-                    h1('Diferencias Finitas'),
-                    box(textInput('difFinEcu', 'Ingrese la Ecuacion'),
-                        textInput('valorX', 'x'),
-                        textInput('valorH', 'h'),
-                        actionButton('diferFinEval', 'Evaluar Derivada')
-                    ),
-                    textOutput('difFinitOut')
-            ),
             
             tabItem('diffNum',
                     h1('Diferenciacicion Numerica'),
@@ -63,7 +44,6 @@ dashboardPage(
                     )
             ),
             
-            
             tabItem('diffNumR2',
                     h1('Diferenciacicion Numerica en R2'),
                     
@@ -83,6 +63,40 @@ dashboardPage(
                         box(width = 4, solidHeader = TRUE,
                             #DT::dataTableOutput('diffnum_table')
                             tableOutput('diffnum_table_r2')
+                        )
+                    )
+            ),
+            
+            tabItem('ceros_newton',
+                    h1('Metodo de Newton'),
+                    fluidRow(
+                        box(width = 4, solidHeader = TRUE, status = "primary",
+                            textInput('function_newton', 'Ingrese la Ecuacion'),
+                            numericInput('newton_x0', 'X0', value = 1),
+                            numericInput('newton_e', 'Tolerancia (e)', value = 0.001),
+                            numericInput('newton_iters', 'Kmax', value = 10),
+                            actionButton('eval_newton', 'Encontrar Ceros')
+                        ),
+                        box(width = 4, solidHeader = TRUE,
+                            #tableOutput('newton_table')
+                            DT::dataTableOutput('newton_table')
+                        )
+                    )
+            ),
+            
+            tabItem('ceros_biseccion',
+                    h1('Metodo de biseccion'),
+                    fluidRow(
+                        box(width = 4, solidHeader = TRUE, status = "primary",
+                            textInput('function_biseccion', 'Ingrese la Ecuacion'),
+                            textInput('biseccion_interval', '[a,b]'),
+                            numericInput('biseccion_e', 'Tolerancia (e)', value = 0.001),
+                            numericInput('biseccion_iters', 'Kmax', value = 10),
+                            actionButton('eval_biseccion', 'Encontrar Ceros')
+                        ),
+                        box(width = 4, solidHeader = TRUE,
+                            #tableOutput('biseccion_table')
+                            DT::dataTableOutput('biseccion_table')
                         )
                     )
             )

@@ -1,7 +1,6 @@
 library(shiny)
 library(reticulate)
 use_python('D:/anaconda3/envs/pydsEnv')
-
 source_python("algoritmos.py")
 
 
@@ -62,8 +61,9 @@ shinyServer(function(input, output) {
         e <- input$newton_e[1]
         k <- input$newton_iters[1]
         
-        result <- metodo_newton(equation, x, k, e)
-        df <- as.data.frame(result)
+        df <- metodo_newton(equation, x, k, e)
+        print(class(df))
+        #df <- as.data.frame(result)
         df
         
     })
@@ -79,8 +79,8 @@ shinyServer(function(input, output) {
         dominio <- strsplit(dominio, ',')
         dominio <- unlist(dominio, recursive = TRUE)
         
-        result <- metodo_biseccion(equation, dominio, k, e)
-        df <- as.data.frame(result)
+        df <- metodo_biseccion(equation, dominio, k, e)
+        #df <- as.data.frame(result)
         df
         
     })

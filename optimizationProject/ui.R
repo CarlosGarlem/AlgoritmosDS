@@ -2,7 +2,6 @@ library(shiny)
 library(shinydashboard)
 #library(DT)
 
-# Define UI for application that draws a histogram
 dashboardPage(
     
     dashboardHeader(title = 'Algoritmos DS'),

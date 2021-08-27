@@ -62,6 +62,7 @@ shinyServer(function(input, output) {
         k <- input$newton_iters[1]
         
         df <- metodo_newton(equation, x, k, e)
+        #write.csv(df, './newton.csv')
         df
         
     })
@@ -78,6 +79,7 @@ shinyServer(function(input, output) {
         dominio <- unlist(dominio, recursive = TRUE)
         
         df <- metodo_biseccion(equation, dominio, k, e)
+        #write.csv(df, './biseccion.csv')
         df
         
     })

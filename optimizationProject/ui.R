@@ -11,7 +11,9 @@ dashboardPage(
             menuItem('Diferenciacion Numerica en R', tabName = 'diffNum'),
             menuItem('Diferenciacion Numerica en R2', tabName = 'diffNumR2'),
             menuItem('Metodo Newton', tabName = 'ceros_newton'),
-            menuItem('Metodo Biseccion', tabName = 'ceros_biseccion')
+            menuItem('Metodo Biseccion', tabName = 'ceros_biseccion'),
+            menuItem('GD problemas QP', tabName = 'gd_qp'),
+            menuItem('GD Funcion Rosenbrock', tabName = 'gd_rosenbrock')
         )
     ),
     
@@ -37,7 +39,6 @@ dashboardPage(
                             actionButton('eval_diffnum', 'Evaluar Derivada')
                         ),
                         box(width = 4, solidHeader = TRUE,
-                            #DT::dataTableOutput('diffnum_table')
                             tableOutput('diffnum_table')
                         )
                     )
@@ -60,7 +61,6 @@ dashboardPage(
                             actionButton('eval_diffnum_r2', 'Evaluar Derivada')
                         ),
                         box(width = 4, solidHeader = TRUE,
-                            #DT::dataTableOutput('diffnum_table')
                             tableOutput('diffnum_table_r2')
                         )
                     )
@@ -77,7 +77,6 @@ dashboardPage(
                             actionButton('eval_newton', 'Encontrar Ceros')
                         ),
                         box(width = 4, solidHeader = TRUE,
-                            #tableOutput('newton_table')
                             DT::dataTableOutput('newton_table')
                         )
                     )
@@ -94,11 +93,51 @@ dashboardPage(
                             actionButton('eval_biseccion', 'Encontrar Ceros')
                         ),
                         box(width = 4, solidHeader = TRUE,
-                            #tableOutput('biseccion_table')
                             DT::dataTableOutput('biseccion_table')
                         )
                     )
+            ),
+            
+            
+            tabItem('gd_qp',
+                    h1('GD Problemas QP'),
+                    fluidRow(
+                        box(width = 4, solidHeader = TRUE, status = "primary",
+                            textInput('qp_Qmatrix', 'Q', placeholder = '[[1,2],[3,4]]', value = '[[2,-1,0],[-1,2,-1],[0,-1,2]]'),
+                            textInput('qp_Cvector', 'C', placeholder = '[1,2]', value = '[1,0,1]'),
+                            textInput('qp_X0', 'X0', placeholder = '[1,2]', value = '[3,5,7]'),
+                            numericInput('qp_epsilon', 'Tolerancia (e)', value = 0.000001),
+                            numericInput('qp_iters', 'N', value = 30),
+                            radioButtons('qp_rbuttons',
+                                         'Tipo de Step Size',
+                                         choices = c('Exacto', 'Constante', 'Variable'),
+                                         selected = 'Exacto'),
+                            numericInput('qp_lr', 'Learning Rate', value = 0.001),
+                            actionButton('eval_qp', 'Evaluar GD')
+                        ),
+                        box(width = 8, solidHeader = TRUE,
+                            DT::dataTableOutput('qp_table')
+                        )
+                    )
+            ),
+            
+            tabItem('gd_rosenbrock',
+                    h1('GD Funcion de Rosenbrock'),
+                    fluidRow(
+                        box(width = 4, solidHeader = TRUE, status = "primary",
+                            textInput('rf_X0', 'X0', placeholder = '[1,2]', value = '[0, 0]'),
+                            numericInput('rf_epsilon', 'Tolerancia (e)', value = 0.00000001),
+                            numericInput('rf_iters', 'N', value = 1000),
+                            numericInput('rf_lr', 'Learning Rate', value = 0.05),
+                            actionButton('eval_rf', 'Evaluar GD')
+                        ),
+                        box(width = 8, solidHeader = TRUE,
+                            DT::dataTableOutput('rf_table')
+                        )
+                    )
             )
+            
+            
         )
     )
 )

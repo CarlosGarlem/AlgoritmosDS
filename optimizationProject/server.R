@@ -6,7 +6,26 @@ source_python("algoritmos.py")
 
 shinyServer(function(input, output) {
     
-    #REACTIVE BUTTONS -----------------------------------
+
+    # Auxiliary functions ---------------------------------
+    parse_input <- function(input, type){
+        x <- input
+        x <- gsub('(\\],)', ']|', x)
+        x <- gsub('(\\[|\\])', '', x)
+        
+        if(type == 'matrix'){
+            x <- strsplit(x, '|', fixed = T)
+            x <- unlist(x, recursive = T)
+            x <- strsplit(x, ',')
+        } else {
+            x <- strsplit(x, ',')
+            x <- unlist(x, recursive = TRUE)
+        }
+        
+        return(x)
+    }
+    
+    #REACTIVE BUTTONS -------------------------------------
     
     algorithm_option <- reactive({
         input$algorithms_diffnum
@@ -14,6 +33,10 @@ shinyServer(function(input, output) {
     
     algorithm_option_r2 <- reactive({
         input$algorithms_diffnum_r2
+    })
+    
+    qp_lrType <- reactive({
+        input$qp_rbuttons
     })
     
     #REACTIVE FUNCTIONS -----------------------------------
@@ -84,6 +107,38 @@ shinyServer(function(input, output) {
         
     })
     
+    
+    
+    calculateGDQP <- eventReactive(input$eval_qp, {
+        Q <- parse_input(input$qp_Qmatrix[1], 'matrix')
+        c <- parse_input(input$qp_Cvector[1], 'vector')
+        x <- parse_input(input$qp_X0[1], 'vector')
+        e <- input$qp_epsilon[1]
+        N <- input$qp_iters[1]
+        lr <- input$qp_lr[1]
+        lr_type <- qp_lrType()
+        
+        #output <- parseInput(Q, F)
+        #as.character(output)
+        df <- gradient_descent_QP(x, Q, c, N, e, lr_type, lr)
+        df
+        
+    })
+    
+    
+    calculateGDRosenbrock <- eventReactive(input$eval_rf, {
+        x <- parse_input(input$rf_X0[1], 'vector')
+        e <- input$rf_epsilon[1]
+        N <- input$rf_iters[1]
+        lr <- input$rf_lr[1]
+        
+        df <- rosenbrock_gd(x, N, e, lr)
+        df
+        
+    })
+    
+    
+    
     #RENDER OUTPUTS  --------------------------------------------------
     #output$diffnum_table <- DT::renderDataTable({
     #    calculateDiffNum()
@@ -105,6 +160,17 @@ shinyServer(function(input, output) {
     
     output$biseccion_table<- DT::renderDataTable({
         calculateBiseccion()
+    })
+    
+    
+    #Gradient Descent
+    output$qp_table<- DT::renderDataTable({
+        calculateGDQP()
+    })
+    
+    
+    output$rf_table<- DT::renderDataTable({
+        calculateGDRosenbrock()
     })
     
     

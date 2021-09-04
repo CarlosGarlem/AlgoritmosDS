@@ -1,5 +1,6 @@
 library(shiny)
 library(reticulate)
+library(ggplot2)
 use_python('D:/anaconda3/envs/pydsEnv')
 source_python("algoritmos.py")
 
@@ -121,6 +122,9 @@ shinyServer(function(input, output) {
         #output <- parseInput(Q, F)
         #as.character(output)
         df <- gradient_descent_QP(x, Q, c, N, e, lr_type, lr)
+        df$Xn <- as.character(df$Xn)
+        df$Pk <- as.character(df$Pk)
+        #write.csv(df, paste('QP', '_', as.character(lr_type), '_', as.character(lr), '.csv', sep = ''))
         df
         
     })
@@ -133,6 +137,9 @@ shinyServer(function(input, output) {
         lr <- input$rf_lr[1]
         
         df <- rosenbrock_gd(x, N, e, lr)
+        df$Xn <- as.character(df$Xn)
+        df$Pk <- as.character(df$Pk)
+        write.csv(df, './rf.csv')
         df
         
     })
@@ -166,6 +173,16 @@ shinyServer(function(input, output) {
     #Gradient Descent
     output$qp_table<- DT::renderDataTable({
         calculateGDQP()
+    })
+    
+    
+    output$qp_graph<- renderPlot({
+        df <- calculateGDQP()
+        ggplot(df, aes(x = Iter, y = Error)) +
+             geom_point(color = 'blue') + 
+             geom_line(color = 'blue') +
+             ggtitle('Grafica de Errores') + 
+             theme_minimal()
     })
     
     

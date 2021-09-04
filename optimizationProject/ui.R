@@ -116,7 +116,11 @@ dashboardPage(
                             actionButton('eval_qp', 'Evaluar GD')
                         ),
                         box(width = 8, solidHeader = TRUE,
-                            DT::dataTableOutput('qp_table')
+                            #DT::dataTableOutput('qp_table')
+                            tabsetPanel(
+                                 tabPanel("Table", DT::dataTableOutput('qp_table')),
+                                 tabPanel("Plot", plotOutput('qp_graph'))
+                            )
                         )
                     )
             ),

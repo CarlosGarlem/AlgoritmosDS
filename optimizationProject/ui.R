@@ -103,9 +103,9 @@ dashboardPage(
                     h1('GD Problemas QP'),
                     fluidRow(
                         box(width = 4, solidHeader = TRUE, status = "primary",
-                            textInput('qp_Qmatrix', 'Q', placeholder = '[[1,2],[3,4]]', value = '[[2,-1,0],[-1,2,-1],[0,-1,2]]'),
-                            textInput('qp_Cvector', 'C', placeholder = '[1,2]', value = '[1,0,1]'),
-                            textInput('qp_X0', 'X0', placeholder = '[1,2]', value = '[3,5,7]'),
+                            textInput('qp_Qmatrix', 'Q', placeholder = '[[2,-1,0],[-1,2,-1],[0,-1,2]]'),
+                            textInput('qp_Cvector', 'C', placeholder = '[1,0,1]'),
+                            textInput('qp_X0', 'X0', placeholder = '[3,5,7]'),
                             numericInput('qp_epsilon', 'Tolerancia (e)', value = 0.000001),
                             numericInput('qp_iters', 'N', value = 30),
                             radioButtons('qp_rbuttons',
@@ -116,7 +116,6 @@ dashboardPage(
                             actionButton('eval_qp', 'Evaluar GD')
                         ),
                         box(width = 8, solidHeader = TRUE,
-                            #DT::dataTableOutput('qp_table')
                             tabsetPanel(
                                  tabPanel("Table", DT::dataTableOutput('qp_table')),
                                  tabPanel("Plot", plotOutput('qp_graph'))
@@ -129,7 +128,7 @@ dashboardPage(
                     h1('GD Funcion de Rosenbrock'),
                     fluidRow(
                         box(width = 4, solidHeader = TRUE, status = "primary",
-                            textInput('rf_X0', 'X0', placeholder = '[1,2]', value = '[0, 0]'),
+                            textInput('rf_X0', 'X0', placeholder = '[0, 0]'),
                             numericInput('rf_epsilon', 'Tolerancia (e)', value = 0.00000001),
                             numericInput('rf_iters', 'N', value = 1000),
                             numericInput('rf_lr', 'Learning Rate', value = 0.05),

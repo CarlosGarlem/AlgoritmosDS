@@ -139,7 +139,7 @@ shinyServer(function(input, output) {
         df <- rosenbrock_gd(x, N, e, lr)
         df$Xn <- as.character(df$Xn)
         df$Pk <- as.character(df$Pk)
-        write.csv(df, './rf.csv')
+        #write.csv(df, './rf.csv')
         df
         
     })

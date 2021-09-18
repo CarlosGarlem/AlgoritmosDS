@@ -13,7 +13,10 @@ dashboardPage(
             menuItem('Metodo Newton', tabName = 'ceros_newton'),
             menuItem('Metodo Biseccion', tabName = 'ceros_biseccion'),
             menuItem('GD problemas QP', tabName = 'gd_qp'),
-            menuItem('GD Funcion Rosenbrock', tabName = 'gd_rosenbrock')
+            menuItem('GD Funcion Rosenbrock', tabName = 'gd_rosenbrock'),
+            menuItem('Generar Datos', tabName = 'generar_datos'),
+            menuItem('GD Solver', tabName = 'gd_solver'),
+            menuItem('Backtracking Rosenbrock', tabName = 'bt_solver')
         )
     ),
     
@@ -136,6 +139,75 @@ dashboardPage(
                         ),
                         box(width = 8, solidHeader = TRUE,
                             DT::dataTableOutput('rf_table')
+                        )
+                    )
+            ),
+            
+            
+            tabItem('generar_datos',
+                    h1('Generar Datos'),
+                    fluidRow(
+                        box(width = 4, solidHeader = TRUE, status = "primary",
+                            numericInput('data_d', 'Columnas (d)', value = 100),
+                            numericInput('data_n', 'Observaciones (n)', value = 1000),
+                            textInput('data_path', 'Folder path', placeholder = 'C:/user/folder/datos.pickle'),
+                            actionButton('data_run', 'Generar datos')
+                        ),
+                        box(width = 8, solidHeader = TRUE,
+                            textOutput('save_data')
+                        )
+                    )
+            ),
+            
+            
+            tabItem('gd_solver',
+                    h1('GD Variants Solver'), 
+                    fluidRow(
+                        box(width = 4, solidHeader = TRUE, status = "primary",
+                            radioButtons('gds_algorithm',
+                                         'Seleccione una variante de GD',
+                                         choices = c('Solucion Cerrada' = 'closeGD',
+                                                     'GD' = 'GD',
+                                                     'SGD' = 'SGD',
+                                                     'MBGD' = 'MBGD'),
+                                         selected = 'closeGD'),
+                            textInput('gds_path', 'File path', placeholder = 'C:/user/folder/datos.pickle'),
+                            numericInput('gds_epsilon', 'Tolerancia (e)', value = 0.00000001),
+                            numericInput('gds_lr', 'Learning Rate', value = 0.0005),
+                            numericInput('gds_iters', 'Kmax', value = 1000),
+                            numericInput('gds_mb', 'Mini-batch size', value = 25),
+                            p('*Minibatch solo sera utilizado para MB-GD'),
+                            actionButton('eval_gds', 'Evaluar GD')
+                        ),
+                        box(width = 8, solidHeader = TRUE,
+                            DT::dataTableOutput('gds_table')
+                        )
+                    )
+            ),
+            
+            
+            tabItem('bt_solver',
+                    h1('Rosenbrock con Backtracking'), 
+                    fluidRow(
+                        box(width = 4, solidHeader = TRUE, status = "primary",
+                            radioButtons('bt_algorithm',
+                                         'Seleccione algoritmo',
+                                         choices = c('GD' = 'GD',
+                                                     'Metodo Newton' = 'Newton'),
+                                         selected = 'GD'),
+                            radioButtons('bt_lr_rb',
+                                         'Seleccione tipo LR',
+                                         choices = c('backtracking' = 'backtracking',
+                                                     'constante' = 'constant'),
+                                         selected = 'backtracking'),
+                            textInput('bt_X0', 'X0', placeholder = '[0, 0]'),
+                            numericInput('bt_epsilon', 'Tolerancia (e)', value = 0.00000001),
+                            numericInput('bt_lr', 'Learning Rate', value = 1),
+                            numericInput('bt_iters', 'Kmax', value = 1000),
+                            actionButton('eval_bt', 'Evaluar Backtracking')
+                        ),
+                        box(width = 8, solidHeader = TRUE,
+                            DT::dataTableOutput('bt_table')
                         )
                     )
             )

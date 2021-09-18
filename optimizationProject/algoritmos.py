@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-import math 
+import math
+import pickle
 import re
 
 
@@ -386,5 +387,206 @@ def rosenbrock_gd(x_0, kmax, epsilon, lr):
         data['Pk'].append(-1 * gradient.round(7))
         data['Error'].append(error.round(7))
     
+    results = pd.DataFrame(data)
+    return results
+
+
+   
+# ### Lab4 (GD Variants and Newton)
+
+# ### GD Variants
+
+# In[165]:
+def generateData(d, n, path):
+    A = np.random.normal(0, 1, size = (n,d))
+    x_true = np.random.normal(0, 1, size = (d,1))
+    b = A.dot(x_true) + np.random.normal(0, 0.5, size = (n,1))
+    data = {'x_true': x_true, 'b': b, 'A': A}
+
+    with open(path, 'wb') as pickle_out:
+        pickle.dump(data, pickle_out)
+
+    return 'Data store successfully on path ' + path
+
+
+# In[38]:
+def getData(filepath):
+    with open(filepath,"rb") as pickle_in:
+        data = pickle.load(pickle_in)
+
+    A = data['A']
+    b = data['b']
+    x_true = data['x_true']
+
+    return A, b, x_true
+
+
+# ##### Parte 1 - Close solution
+# In[143]:
+def getCloseSolution(path):
+    A, b, x_true = getData(path)
+    inverse = np.linalg.inv(np.matmul(A.T, A))
+    x = np.matmul(np.matmul(inverse, A.T), b)
+    f_x = np.sum((np.matmul(A, x) - b)**2)
+    e_x = np.linalg.norm(x - x_true)
+
+    gradient = np.matmul(np.matmul(A.T, A), x) - np.matmul(A.T, b)
+    error = np.linalg.norm(gradient)
+    results = pd.DataFrame({'Iter': 1, 'Xn': [x], 'Error': error, 'F*': f_x, 'E_n': e_x})
+
+    return results
+
+
+# ##### Parte 2 - GD
+# In[159]:
+def computeGD(x_0, A, b, x_true, kmax, lr, mb_size, epsilon):
+    k = 0
+    x_k = x_0
+    error = float('inf')
+    data = {'Iter': [], 'Xn': [], 'Pk': [], 'Error': [], 'F*': [], 'E_n': []}
+
+    mat = np.hstack((A,b))
+    while k < kmax and error > epsilon:
+        np.random.shuffle(mat) #in-place shuffle
+        iters = A.shape[0] // mb_size
+        for i in range(0, iters):
+            start = i * mb_size
+            end = (1+i) * mb_size
+            A_mb = mat[start:end, :-1]
+            b_mb = mat[start:end, -1]
+            b_mb = np.expand_dims(b_mb, axis = 1)
+
+            gradient = np.matmul(np.matmul(A_mb.T, A_mb), x_k) - np.matmul(A_mb.T, b_mb)
+            x_k1 = x_k - (lr * gradient)
+            x_k = x_k1
+
+        k += 1
+        f_k = np.sum((np.matmul(A, x_k) - b)**2)
+        e_k = np.linalg.norm(x_k - x_true)
+        error = np.linalg.norm(gradient)
+        data['Iter'].append(k)
+        data['Xn'].append(x_k.round(7))
+        data['Pk'].append(-1 * gradient.round(7))
+        data['Error'].append(error.round(7))
+        data['F*'].append(f_k.round(7))
+        data['E_n'].append(e_k.round(7))
+
+    results = pd.DataFrame(data)
+    return results
+
+
+# In[142]:
+def gdSolver(path, kmax, lr, mb_size, variant = 'GD', epsilon = 0.00000001):
+    A, b, x_true = getData(path)
+    x_0 = np.zeros_like(x_true)
+    if variant == 'GD':
+        df = computeGD(x_0, A, b, x_true, kmax, lr, A.shape[0], epsilon)
+    elif variant == 'SGD':
+        df = computeGD(x_0, A, b, x_true, kmax, lr, 1, epsilon)
+    elif variant == 'MBGD':
+        df = computeGD(x_0, A, b, x_true, kmax, lr, mb_size, epsilon)
+
+    return df
+
+
+# #### Metodo de Newton
+
+# ##### Parte 1 - GD con Backtracking line search
+# In[58]:
+def evalRosenbrockFunction(x0):
+    x = x0[0, 0]
+    y = x0[1, 0]
+    rsb_function = '100*((y-x**2)**2) + (1 - x)**2'
+    result = eval(rsb_function, {}, {'x': x, 'y': y})
+    return result
+
+
+# In[59]:
+def backTrackingLineSearch(x_0, lr, ro, c):
+    x_k = x_0
+    condition = True
+
+    while condition:
+        gradient = getRosenbrockGradient(x_k)
+        x_k1 = x_k - (lr * gradient)
+
+        fk_1 = evalRosenbrockFunction(x_k1)
+        f_k = evalRosenbrockFunction(x_k)
+        rhs = c * lr * np.matmul(gradient.T, -gradient)
+
+        condition = (fk_1 > (f_k + rhs)) #the loop is the negated condition of the backtracking algorithm
+        lr *= ro
+
+    return lr
+
+
+# In[60]:
+def rosenbrock_backtracking(x_0, kmax, epsilon, alpha, lr_type = 'backtracking', ro = 0.5, c = 0.0001):
+    k = 0
+    x_k = parseInput(x_0, reshape = True)
+    error = float('inf')
+    data = {'Iter': [], 'Xn': [], 'Pk': [], 'Error': []}
+
+    if lr_type == 'backtracking':
+        lr = backTrackingLineSearch(x_k, alpha, ro, c)
+    else: #else it would be constant
+        lr = alpha
+
+    while k < kmax and error > epsilon:
+        gradient = getRosenbrockGradient(x_k)
+        x_k1 = x_k - (lr * gradient)
+
+        x_k = x_k1
+        k += 1
+        error = np.linalg.norm(gradient)
+
+        data['Iter'].append(k)
+        data['Xn'].append(x_k.round(7))
+        data['Pk'].append(-1 * gradient.round(7))
+        data['Error'].append(error.round(7))
+
+    results = pd.DataFrame(data)
+    return results
+
+
+# ##### Parte 2 - Metodo de newton con Backtracking line search
+# In[63]:
+def getRosenbrockHessian(x0):
+    x = x0[0, 0]
+    y = x0[1, 0]
+    g1 = eval('1200*(x**2) - 400*(y) + 2', {}, {'x': x, 'y': y})
+    g2 = eval('-400*(x)', {}, {'x': x})
+    hessian = np.array([g1, g2, g2, 200], dtype = 'float').reshape(2,2)
+
+    return hessian
+
+
+# In[64]:
+def newton_optimization(x_0, kmax, epsilon, alpha, lr_type = 'backtracking', ro = 0.5, c = 0.0001):
+    k = 0
+    x_k = parseInput(x_0, reshape = True)
+    error = float('inf')
+    data = {'Iter': [], 'Xn': [], 'Pk': [], 'Error': []}
+
+    if lr_type == 'backtracking':
+        lr = backTrackingLineSearch(x_k, alpha, ro, c)
+    else: #else it would be constant
+        lr = alpha
+
+    while k < kmax and error > epsilon:
+        gradient = getRosenbrockGradient(x_k)
+        hessian = getRosenbrockHessian(x_k)
+        p_k = -1 * np.matmul(np.linalg.inv(hessian), gradient)
+        x_k1 = x_k + (lr * p_k)
+
+        x_k = x_k1
+        k += 1
+        error = np.linalg.norm(gradient)
+
+        data['Iter'].append(k)
+        data['Xn'].append(x_k.round(7))
+        data['Pk'].append(p_k.round(7))
+        data['Error'].append(error.round(7))
+
     results = pd.DataFrame(data)
     return results

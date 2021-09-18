@@ -40,6 +40,18 @@ shinyServer(function(input, output) {
         input$qp_rbuttons
     })
     
+    gds_algorithm_option <- reactive({
+        input$gds_algorithm
+    })
+    
+    bt_algorithm_option <- reactive({
+        input$bt_algorithm
+    })
+    
+    bt_lr_option <- reactive({
+        input$bt_lr_rb
+    })
+    
     #REACTIVE FUNCTIONS -----------------------------------
     
     calculateDiffNum <- eventReactive(input$eval_diffnum, {
@@ -108,7 +120,7 @@ shinyServer(function(input, output) {
         
     })
     
-    
+   
     
     calculateGDQP <- eventReactive(input$eval_qp, {
         Q <- parse_input(input$qp_Qmatrix[1], 'matrix')
@@ -145,11 +157,60 @@ shinyServer(function(input, output) {
     })
     
     
+    generateMatrixData <- eventReactive(input$data_run, {
+        d <- input$data_d[1]
+        n <- input$data_n[1]
+        path <- input$data_path[1]
+        
+        txt <- generateData(d, n, path)
+        txt
+    })
+    
+    
+    calculateGDVariant <- eventReactive(input$eval_gds, {
+        path <- input$gds_path[1]
+        e <- input$gds_epsilon[1]
+        kmax <- input$gds_iters[1]
+        lr <- input$gds_lr[1]
+        mb <- input$gds_mb[1]
+        variant <- gds_algorithm_option()
+
+        if(variant == 'closeGD'){
+            df <- getCloseSolution(path)
+        }else{
+            df <- gdSolver(path, kmax, lr, mb, variant, e)
+            df$Pk <- as.character(df$Pk)
+            df$Pk <- substr(df$Pk, 1, 50)
+            df$Pk <- paste(df$Pk, '...', sep = '')
+        }
+        df$Xn <- as.character(df$Xn)
+        df$Xn <- substr(df$Xn, 1, 50)
+        df$Xn <- paste(df$Xn, '...', sep = '')
+        df
+    })
+    
+    
+    calculateBTRosenbrock <- eventReactive(input$eval_bt, {
+        x <- parse_input(input$bt_X0[1], 'vector')
+        e <- input$bt_epsilon[1]
+        kmax <- input$bt_iters[1]
+        lr <- input$bt_lr[1]
+        lr_type <- bt_lr_option()
+        
+        d_function <- switch(bt_algorithm_option(),
+                             GD = rosenbrock_backtracking,
+                             Newton = newton_optimization)
+        
+        df <- d_function(x, kmax, e, lr, lr_type)
+        df$Xn <- as.character(df$Xn)
+        df$Pk <- as.character(df$Pk)
+        df
+        
+    })
+    
     
     #RENDER OUTPUTS  --------------------------------------------------
-    #output$diffnum_table <- DT::renderDataTable({
-    #    calculateDiffNum()
-    #})
+
     #Derivadas
     output$diffnum_table <- renderTable({
         calculateDiffNum()
@@ -190,5 +251,21 @@ shinyServer(function(input, output) {
         calculateGDRosenbrock()
     })
     
+    
+    #Salvar datos
+    output$save_data <- renderText({
+        generateMatrixData()
+    })
+    
+    
+    #GD variants output
+    output$gds_table<- DT::renderDataTable({
+        calculateGDVariant()
+    })
+    
+    
+    output$bt_table<- DT::renderDataTable({
+        calculateBTRosenbrock()
+    })
     
 })
